@@ -1,6 +1,6 @@
 # ⚛ Atomes en 3D
 
-Visualisation 3D interactive des atomes pour les élèves de collège.
+Visualisation 3D interactive des atomes.
 
 On choisit un élément dans le tableau périodique, et l’atome apparaît en animation avec ses **protons (+)**, ses **neutrons (0)** et ses **électrons (−)** répartis sur les couches. On peut ensuite retirer ou ajouter des électrons pour former des **ions**.
 
@@ -31,4 +31,4 @@ HTML, CSS et JavaScript dans un seul fichier, avec [Three.js](https://threejs.or
 
 ## Licence
 
-MIT, voir le fichier `LICENSE`.
+
