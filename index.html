@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atome de carbone en 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Idée de mise en page : la scène 3D à gauche, la « fiche » de l'atome à droite,
+   le tableau périodique en pleine largeur dessous. Une colonne sous 900px. */
+:root{
+  --bg:#eadfc8; --surface:#f3ead6; --ink:#2a2416; --muted:#5f563f; --line:#d4c5a3;
+  --accent:#09638f; --accent-ink:#ffffff;
+  --proton:#a81c25; --neutron:#1763ad; --electron:#855200;
+  --mass:#5a2fcf; --atomic:#a81c25;
+  --e-ball:#b06000; --e-sign:#ffffff; --e-bar:6; --p-ball:#c8202a; --n-ball:#1a6fc4;
+  --ring:#7d7054;
+  --stage-a:#f8f1e0; --stage-b:#dccfae;
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif;
+  --body:"Chiffres","Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --r:18px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a0f1e; --surface:#121a2e; --ink:#e9eef8; --muted:#9ba8c0; --line:#263150;
+    --accent:#38bdf8; --accent-ink:#04121c;
+    --proton:#ff7d83; --neutron:#62b4ff; --electron:#ffab40;
+    --mass:#c3adff; --atomic:#ff9498;
+  --e-ball:#b06000; --e-sign:#ffffff; --p-ball:#c8202a; --n-ball:#1a6fc4;
+    --ring:#6f7fa3;
+  --stage-a:#1b2748; --stage-b:#0b1122;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a0f1e; --surface:#121a2e; --ink:#e9eef8; --muted:#9ba8c0; --line:#263150;
+  --accent:#38bdf8; --accent-ink:#04121c;
+  --proton:#ff7d83; --neutron:#62b4ff; --electron:#ffab40;
+  --mass:#c3adff; --atomic:#ff9498;
+  --e-ball:#b06000; --e-sign:#ffffff; --p-ball:#c8202a; --n-ball:#1a6fc4;
+  --ring:#6f7fa3;
+  --stage-a:#1b2748; --stage-b:#0b1122;
+  color-scheme:dark;
+}
+/* chiffres sans zéro barré : une police du système, utilisée seulement pour 0-9 */
+@font-face{font-family:"Chiffres";src:local("Arial"),local("ArialMT"),local("Helvetica Neue"),local("Helvetica"),local("Roboto"),local("Noto Sans"),local("DejaVu Sans");unicode-range:U+0030-0039}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 16px 48px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(1.9rem,4.6vw,3rem);font-weight:700}
+h1 span{color:var(--accent)}
+h2{font-size:1.35rem;font-weight:600}
+h3{font-size:1.05rem;font-weight:600}
+p{margin:0}
+.lead{color:var(--muted);max-width:62ch}
+header{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-start;justify-content:space-between}
+header>div{display:flex;flex-direction:column;gap:6px;flex:1 1 320px;min-width:0}
+
+.top{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.top{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+
+/* ---------- Scène 3D ---------- */
+.stage{position:relative;border-radius:var(--r);border:1px solid var(--line);overflow:hidden;
+  background:radial-gradient(circle at 50% 45%,var(--stage-a),var(--stage-b));
+  aspect-ratio:4/3;max-height:620px;width:100%}
+@media (max-width:600px){.stage{aspect-ratio:1/1}}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.stage canvas:active{cursor:grabbing}
+.stage svg.leaders{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.leaders line{stroke:var(--ink);stroke-width:1.5;opacity:.7}
+.leaders circle{fill:var(--ink)}
+.tag{position:absolute;left:0;top:0;pointer-events:none;background:var(--surface);border:1px solid var(--line);
+  border-radius:12px;padding:6px 10px;font-size:.82rem;line-height:1.25;max-width:190px;
+  box-shadow:0 4px 14px rgba(10,20,50,.12);will-change:transform}
+.tag b{font-family:var(--display);font-weight:600;font-size:.98rem;display:block}
+.tag[hidden]{display:none}
+#t2s{display:none}
+.hint{position:absolute;left:12px;bottom:10px;font-size:.8rem;color:var(--muted);pointer-events:none}
+.fallback{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--muted)}
+
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;color:inherit}
+.btn{font-family:var(--display);font-weight:500;font-size:.98rem;min-height:44px;padding:8px 16px;border-radius:999px;
+  border:1px solid var(--line);background:var(--surface);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.sq{min-width:44px;padding:8px 0;font-size:1.25rem;line-height:1}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* ---------- Légende ---------- */
+.legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:600px){.legend{grid-template-columns:minmax(0,1fr)}}
+.legend li{display:flex;gap:10px;align-items:flex-start}
+ul{list-style:none;margin:0;padding:0}
+.ball{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--display);font-weight:700;font-size:1.2rem;color:#fff;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.55),rgba(255,255,255,0) 45%),var(--c)}
+.ball.p{--c:var(--p-ball)}.ball.n{--c:var(--n-ball)}.ball.e{--c:var(--e-ball);color:var(--e-sign);width:24px;height:24px;margin:5px;font-size:1rem}
+.legend b{font-family:var(--display);font-weight:600;display:block}
+.legend small{color:var(--muted);font-size:.86rem;display:block;line-height:1.35}
+.noyau-note{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:.95rem}
+.noyau-note b{font-family:var(--display);font-weight:600}
+.cp{color:var(--proton);font-weight:700}.cn{color:var(--neutron);font-weight:700}.ce{color:var(--electron);font-weight:700}
+
+/* ---------- Représentation symbolique ---------- */
+.nota{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.nota-title{font-family:var(--display);font-weight:600;background:var(--accent);color:var(--accent-ink);
+  padding:6px 16px;border-radius:12px;margin-bottom:8px}
+.nota p.la{font-family:var(--display);font-weight:500;font-size:.98rem;line-height:1.3}
+.la.mass{color:var(--mass)}.la.atomic{color:var(--atomic)}.la.sym{color:var(--muted);text-align:left;max-width:11ch}
+.dot{display:inline-block;width:.75em;height:.75em;border-radius:50%;vertical-align:-.05em;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.6),rgba(255,255,255,0) 45%),var(--c)}
+.dot.p{--c:var(--p-ball)}.dot.n{--c:var(--n-ball)}.dot.e{--c:var(--e-ball)}
+.nota-mid{display:flex;align-items:center;gap:10px}
+.nota-core{display:grid;grid-template-columns:auto auto;column-gap:4px;align-items:center;justify-items:end}
+.nota-core .A,.nota-core .Z{font-family:var(--display);font-weight:600;font-size:2.1rem;line-height:1;font-variant-numeric:tabular-nums}
+.nota-core .A{color:var(--mass);grid-column:1;grid-row:2}
+.nota-core .Z{color:var(--atomic);grid-column:1;grid-row:3}
+.nota-core .X{grid-column:2;grid-row:2/4;font-family:var(--display);font-weight:700;font-size:5rem;line-height:1;justify-self:start}
+.nota-core .up{grid-column:1;grid-row:1}.nota-core .down{grid-column:1;grid-row:4}
+.arrow{width:22px;height:30px;color:var(--muted)}
+.arrow.right{width:38px;height:22px}
+
+.calc{display:flex;flex-direction:column;gap:8px}
+.calc li{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line)}
+.calc li:last-child{border-bottom:0}
+.calc .how{color:var(--muted);font-size:.88rem}
+.calc .num{font-family:var(--display);font-weight:700;font-size:1.5rem;font-variant-numeric:tabular-nums}
+.calc li{cursor:pointer;padding:8px 10px;margin:0 -10px;border-radius:10px;-webkit-tap-highlight-color:transparent}
+.calc li:hover{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.calc li[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 16%,transparent);box-shadow:inset 4px 0 0 var(--accent)}
+.tip{color:var(--muted);font-size:.9rem;margin-bottom:6px}
+.neutral{margin-top:6px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:.95rem}
+
+/* ---------- Tableau périodique ---------- */
+.pt-head{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.key{color:var(--muted);font-size:.95rem}
+.key .A{color:var(--mass);font-weight:700}.key .Z{color:var(--atomic);font-weight:700}
+.lg{display:grid;grid-template-columns:minmax(0,270px) 150px minmax(0,270px);justify-content:center;margin:6px 0 18px}
+.lg-side{position:relative;height:150px}
+.lg-side li{position:absolute;left:0;right:0;display:flex;gap:8px}
+.lg-side i{flex:1;min-width:14px;height:2px;background:var(--muted);border-radius:2px}
+.lg-side span{font-size:.9rem;line-height:1.2}
+.lg-side b{font-family:var(--display);font-weight:600;display:block}
+.lg-side small{color:var(--muted);font-size:.8rem;display:block}
+.lg-side b.A{color:var(--mass)}.lg-side b.Z{color:var(--atomic)}
+.lg-left{text-align:right}
+.lg-a{bottom:70%;align-items:flex-end}
+.lg-z{top:51%;align-items:flex-start}
+.lg-x{top:41%;transform:translateY(-50%);align-items:center}
+.lg-n{top:89%;transform:translateY(-50%);align-items:center}
+.lg-cell{width:150px;height:150px;border-radius:14px;border:2px solid var(--cat);padding:6px 8px 8px;
+  background:color-mix(in srgb,var(--cat) 20%,var(--surface));
+  display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:1fr 1fr auto;column-gap:4px}
+.lg-cell .A,.lg-cell .Z{font-family:var(--display);font-weight:600;font-size:1.35rem;line-height:1;text-align:right;font-variant-numeric:tabular-nums}
+.lg-cell .A{grid-column:1;grid-row:1;color:var(--mass);align-self:end;padding-bottom:2px}
+.lg-cell .Z{grid-column:1;grid-row:2;color:var(--atomic);align-self:start;padding-top:2px}
+.lg-cell .X{grid-column:2;grid-row:1/3;align-self:center;font-family:var(--display);font-weight:700;font-size:3.6rem;line-height:1}
+.lg-cell .N{grid-column:1/4;text-align:center;font-size:.9rem;line-height:1.1;overflow-wrap:anywhere}
+@media (max-width:640px){
+  .lg{grid-template-columns:minmax(0,1fr);justify-items:center;gap:10px}
+  .lg-cell{order:-1}
+  .lg-side{height:auto;width:100%;display:flex;flex-direction:column;gap:8px}
+  .lg-side li{position:static;transform:none}
+  .lg-side i{display:none}
+  .lg-left{text-align:left}
+}
+.pt-scroll{overflow-x:auto;container-type:inline-size;padding:4px}
+.pt{display:grid;grid-template-columns:14px repeat(18,minmax(0,1fr));gap:2px;min-width:656px}
+.axn{display:grid;place-items:center;font-size:clamp(8px,1.05cqw,12px);font-weight:400;color:var(--muted);opacity:.6;line-height:1.4}
+.swipe{display:none;color:var(--muted);font-size:.85rem;margin:0 0 8px}
+@media (max-width:715px){.swipe{display:block}}
+.el{aspect-ratio:1/1;border-radius:8px;border:1px solid color-mix(in srgb,var(--cat) 45%,var(--surface));cursor:pointer;padding:0 1px;
+  display:grid;grid-template-columns:auto auto;justify-content:center;grid-template-rows:1fr 1fr;align-items:center;column-gap:1px;
+  background:color-mix(in srgb,var(--cat) 20%,var(--surface));min-width:0}
+.el:hover{border-color:var(--cat)}
+.el[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.el .A,.el .Z{font-size:clamp(8px,.95cqw,11px);font-weight:700;line-height:1;text-align:right;font-variant-numeric:tabular-nums}
+.el .A{color:var(--mass);align-self:end;padding-bottom:1px}
+.el .Z{color:var(--atomic);align-self:start;padding-top:1px}
+.el .X{grid-column:2;grid-row:1/3;font-family:var(--display);font-weight:600;font-size:clamp(13px,1.9cqw,24px);line-height:1;text-align:left}
+.ph{display:grid;place-items:center;font-size:clamp(8px,.9cqw,11px);color:var(--muted);border:1px dashed var(--line);border-radius:8px;text-align:center;line-height:1.1}
+.gap{grid-column:1/-1;height:8px}
+.c-a{--cat:#ef6c35}.c-e{--cat:#d99a00}.c-t{--cat:#3b82c4}.c-p{--cat:#64748b}.c-m{--cat:#0fa3a3}
+.c-n{--cat:#22a06b}.c-h{--cat:#84a315}.c-g{--cat:#8b5cf6}.c-l{--cat:#b0603a}.c-c{--cat:#9a4d6b}
+.cats{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:.85rem;color:var(--muted)}
+.cats span{display:inline-flex;align-items:center;gap:6px}
+.cats i{width:14px;height:14px;border-radius:4px;background:color-mix(in srgb,var(--cat) 45%,var(--surface));border:1px solid var(--cat)}
+.notes{border-top:1px solid var(--line);padding-top:22px;display:flex;flex-direction:column;gap:16px;text-align:center}
+.notes h2{font-size:1.1rem;color:var(--muted)}
+.notes ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 28px}
+@media (max-width:700px){.notes ul{grid-template-columns:minmax(0,1fr)}}
+.notes li{display:flex;flex-direction:column;gap:4px;align-items:center}
+.notes b{font-family:var(--display);font-weight:600;font-size:.98rem}
+.notes span{color:var(--muted);font-size:.9rem;line-height:1.45;max-width:38ch;text-wrap:pretty}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+    <h1>L'atome <span id="hName">de carbone</span></h1>
+    <p class="lead">Fais tourner l'atome avec ton doigt ou ta souris. Pour voir un autre atome, touche une case du tableau périodique en bas de la page.</p>
+    </div>
+    <button class="btn sq" id="bTheme" type="button" aria-label="Changer de mode jour ou nuit"></button>
+  </header>
+
+  <div class="top">
+    <div class="col">
+      <div class="stage" id="stage">
+        <canvas id="cv" aria-label="Modèle 3D de l'atome : le noyau au centre, les électrons autour"></canvas>
+        <svg class="leaders" id="leaders" aria-hidden="true">
+          <line id="l0"/><circle id="d0" r="3"/>
+          <line id="l1"/><circle id="d1" r="3"/>
+          <line id="l2"/><circle id="d2" r="3"/>
+        </svg>
+        <div class="tag" id="t0"><b>Noyau</b><span id="t0s">12 nucléons : 6 protons + 6 neutrons</span></div>
+        <div class="tag" id="t1"><b class="ce">Électron</b>charge négative (−)</div>
+        <div class="tag" id="t2"><b>Couche d'électrons</b><span id="t2s"></span></div>
+        <p class="hint" id="hint">Glisse pour tourner · pince pour zoomer</p>
+      </div>
+
+      <div class="tools">
+        <button class="btn" id="bPlay" aria-pressed="false">Pause</button>
+        <button class="btn" id="bTags" aria-pressed="true">Étiquettes</button>
+        <button class="btn" id="bBoom" aria-pressed="false">Écarter les nucléons</button>
+        <button class="btn sq" id="bOut" aria-label="Zoom arrière">−</button>
+        <button class="btn sq" id="bIn" aria-label="Zoom avant">+</button>
+        <button class="btn sq" id="bReset" aria-label="Réinitialiser la vue" title="Réinitialiser la vue"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;margin:auto"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/></svg></button>
+      </div>
+
+      <section class="card" aria-labelledby="legT">
+        <h2 id="legT" style="margin-bottom:12px">Légende</h2>
+        <ul class="legend">
+          <li><span class="ball p">+</span><div><b class="cp">Proton</b><small>Charge positive (+).<br>Dans le noyau.</small></div></li>
+          <li><span class="ball n"></span><div><b class="cn">Neutron</b><small>Aucune charge (neutre).<br>Dans le noyau.</small></div></li>
+          <li><span class="ball e">−</span><div><b class="ce">Électron</b><small>Charge négative (−).<br>Tourne autour du noyau.</small></div></li>
+        </ul>
+        <p class="noyau-note"><b>Le noyau</b> est le centre de l'atome. Il contient les <b>nucléons</b> : c'est le nom donné aux <span class="cp">protons</span> et aux <span class="cn">neutrons</span> réunis. Les <span class="ce">électrons</span> se déplacent autour du noyau.</p>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="card nota" aria-label="Représentation symbolique de l'atome">
+        <p class="nota-title">Représentation symbolique d'un atome</p>
+        <p class="la mass">Nombre de masse (A) = nombre de nucléons,<br>protons <i class="dot p"></i> et neutrons <i class="dot n"></i></p>
+        <div class="nota-mid">
+          <div class="nota-core">
+            <svg class="arrow up" viewBox="0 0 22 30" aria-hidden="true"><path d="M11 28V4M4 11l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="A" id="nA">12</span>
+            <span class="X" id="nX">C</span>
+            <span class="Z" id="nZ">6</span>
+            <svg class="arrow down" viewBox="0 0 22 30" aria-hidden="true"><path d="M11 2v24M4 19l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <svg class="arrow right" viewBox="0 0 38 22" aria-hidden="true"><path d="M2 11h32M27 4l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <p class="la sym">Symbole de l'élément chimique</p>
+        </div>
+        <p class="la atomic">Numéro atomique (Z) = nombre de protons <i class="dot p"></i></p>
+      </section>
+
+      <section class="card" aria-labelledby="cT" aria-live="polite">
+        <h2 id="cT" style="margin-bottom:6px">Je compte les particules</h2>
+        <p class="tip">Touche une ligne pour repérer ces particules dans l'atome. Touche-la encore pour tout réafficher.</p>
+        <ul class="calc">
+          <li><div><b class="cp">Protons</b><div class="how" id="hP">Z = 6</div></div><span class="num cp" id="vP">6</span></li>
+          <li><div><b class="cn">Neutrons</b><div class="how" id="hN">A − Z = 12 − 6</div></div><span class="num cn" id="vN">6</span></li>
+          <li><div><b>Nucléons</b><div class="how" id="hA">protons + neutrons = A</div></div><span class="num" id="vA">12</span></li>
+          <li><div><b class="ce">Électrons</b><div class="how" id="hE">autant que de protons</div></div><span class="num ce" id="vE">6</span></li>
+        </ul>
+        <p class="neutral" id="neutral"></p>
+      </section>
+    </div>
+  </div>
+
+  <section class="card" aria-labelledby="ptT">
+    <div class="pt-head">
+      <h2 id="ptT">Tableau périodique en représentation symbolique</h2>
+      <p class="key">Chaque case est écrite comme la représentation symbolique d'un atome : <span class="A">A</span> en haut et <span class="Z">Z</span> en bas, à gauche du symbole. Touche une case pour afficher l'atome en 3D. La grande case ci-dessous montre comment lire l'élément choisi.</p>
+    </div>
+    <div class="lg" role="group" aria-label="Légende : comment lire une case du tableau">
+      <ul class="lg-side lg-left">
+        <li class="lg-a"><span><b class="A">Nombre de masse A</b><small>nombre de nucléons (protons + neutrons)</small></span><i></i></li>
+        <li class="lg-z"><span><b class="Z">Numéro atomique Z</b><small>nombre de protons</small></span><i></i></li>
+      </ul>
+      <div class="lg-cell c-n" id="lgCell"><span class="A" id="lgA">12</span><span class="X" id="lgX">C</span><span class="Z" id="lgZ">6</span><span class="N" id="lgN">Carbone</span></div>
+      <ul class="lg-side lg-right">
+        <li class="lg-x"><i></i><span><b>Symbole chimique</b></span></li>
+        <li class="lg-n"><i></i><span><b>Nom de l'élément</b></span></li>
+      </ul>
+    </div>
+    <p class="swipe">Fais glisser le tableau vers la droite pour voir la suite →</p>
+    <div class="pt-scroll"><div class="pt" id="pt"></div></div>
+    <div class="cats" id="cats"></div>
+  </section>
+
+  <footer class="notes" aria-labelledby="nT">
+    <h2 id="nT">Ce dessin est un modèle</h2>
+    <ul>
+      <li><b>Échelle</b><span>Dans la réalité, le noyau est environ 100 000 fois plus petit que l'atome. Il est grossi ici pour rester visible.</span></li>
+      <li><b>Électrons</b><span>Ils ne suivent pas vraiment des cercles. Les couches sont une façon simple de les représenter.</span></li>
+      <li><b>Nombre de masse A</b><span>Le tableau affiche celui de l'atome le plus courant, ou le plus stable, de chaque élément.</span></li>
+    </ul>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+var RAW="H,Hydrogène,1,n|He,Hélium,4,g|Li,Lithium,7,a|Be,Béryllium,9,e|B,Bore,11,m|C,Carbone,12,n|N,Azote,14,n|O,Oxygène,16,n|F,Fluor,19,h|Ne,Néon,20,g|Na,Sodium,23,a|Mg,Magnésium,24,e|Al,Aluminium,27,p|Si,Silicium,28,m|P,Phosphore,31,n|S,Soufre,32,n|Cl,Chlore,35,h|Ar,Argon,40,g|K,Potassium,39,a|Ca,Calcium,40,e|Sc,Scandium,45,t|Ti,Titane,48,t|V,Vanadium,51,t|Cr,Chrome,52,t|Mn,Manganèse,55,t|Fe,Fer,56,t|Co,Cobalt,59,t|Ni,Nickel,58,t|Cu,Cuivre,63,t|Zn,Zinc,64,t|Ga,Gallium,69,p|Ge,Germanium,74,m|As,Arsenic,75,m|Se,Sélénium,80,n|Br,Brome,79,h|Kr,Krypton,84,g|Rb,Rubidium,85,a|Sr,Strontium,88,e|Y,Yttrium,89,t|Zr,Zirconium,90,t|Nb,Niobium,93,t|Mo,Molybdène,98,t|Tc,Technétium,98,t|Ru,Ruthénium,102,t|Rh,Rhodium,103,t|Pd,Palladium,106,t|Ag,Argent,107,t|Cd,Cadmium,114,t|In,Indium,115,p|Sn,Étain,120,p|Sb,Antimoine,121,m|Te,Tellure,130,m|I,Iode,127,h|Xe,Xénon,132,g|Cs,Césium,133,a|Ba,Baryum,138,e|La,Lanthane,139,l|Ce,Cérium,140,l|Pr,Praséodyme,141,l|Nd,Néodyme,142,l|Pm,Prométhium,145,l|Sm,Samarium,152,l|Eu,Europium,153,l|Gd,Gadolinium,158,l|Tb,Terbium,159,l|Dy,Dysprosium,164,l|Ho,Holmium,165,l|Er,Erbium,166,l|Tm,Thulium,169,l|Yb,Ytterbium,174,l|Lu,Lutécium,175,l|Hf,Hafnium,180,t|Ta,Tantale,181,t|W,Tungstène,184,t|Re,Rhénium,187,t|Os,Osmium,192,t|Ir,Iridium,193,t|Pt,Platine,195,t|Au,Or,197,t|Hg,Mercure,202,t|Tl,Thallium,205,p|Pb,Plomb,208,p|Bi,Bismuth,209,p|Po,Polonium,209,p|At,Astate,210,h|Rn,Radon,222,g|Fr,Francium,223,a|Ra,Radium,226,e|Ac,Actinium,227,c|Th,Thorium,232,c|Pa,Protactinium,231,c|U,Uranium,238,c|Np,Neptunium,237,c|Pu,Plutonium,244,c|Am,Américium,243,c|Cm,Curium,247,c|Bk,Berkélium,247,c|Cf,Californium,251,c|Es,Einsteinium,252,c|Fm,Fermium,257,c|Md,Mendélévium,258,c|No,Nobélium,259,c|Lr,Lawrencium,266,c|Rf,Rutherfordium,267,t|Db,Dubnium,268,t|Sg,Seaborgium,269,t|Bh,Bohrium,270,t|Hs,Hassium,269,t|Mt,Meitnérium,278,t|Ds,Darmstadtium,281,t|Rg,Roentgenium,282,t|Cn,Copernicium,285,t|Nh,Nihonium,286,p|Fl,Flérovium,289,p|Mc,Moscovium,290,p|Lv,Livermorium,293,p|Ts,Tennesse,294,h|Og,Oganesson,294,g";
+var EL=RAW.split("|").map(function(s,i){var p=s.split(",");return{Z:i+1,sym:p[0],name:p[1],A:+p[2],cat:p[3]};});
+var CATS={a:"Métaux alcalins",e:"Alcalino-terreux",t:"Métaux de transition",p:"Autres métaux",m:"Métalloïdes",n:"Non-métaux",h:"Halogènes",g:"Gaz nobles",l:"Lanthanides",c:"Actinides"};
+var SHELL_NAMES=["K","L","M","N","O","P","Q"];
+
+/* Répartition des électrons par couche (règle de remplissage + exceptions connues) */
+var ORDER=[[1,2],[2,2],[2,6],[3,2],[3,6],[4,2],[3,10],[4,6],[5,2],[4,10],[5,6],[6,2],[4,14],[5,10],[6,6],[7,2],[5,14],[6,10],[7,6]];
+var EXC={24:[2,8,13,1],29:[2,8,18,1],41:[2,8,18,12,1],42:[2,8,18,13,1],44:[2,8,18,15,1],45:[2,8,18,16,1],46:[2,8,18,18],47:[2,8,18,18,1],57:[2,8,18,18,9,2],58:[2,8,18,19,9,2],64:[2,8,18,25,9,2],78:[2,8,18,32,17,1],79:[2,8,18,32,18,1],89:[2,8,18,32,18,9,2],90:[2,8,18,32,18,10,2],91:[2,8,18,32,20,9,2],92:[2,8,18,32,21,9,2],93:[2,8,18,32,22,9,2],96:[2,8,18,32,25,9,2],103:[2,8,18,32,32,8,3]};
+function shells(Z){
+  if(EXC[Z])return EXC[Z].slice();
+  var s=[],left=Z;
+  for(var i=0;i<ORDER.length&&left>0;i++){var n=ORDER[i][0],k=Math.min(ORDER[i][1],left);s[n-1]=(s[n-1]||0)+k;left-=k;}
+  for(var j=0;j<s.length;j++)if(!s[j])s[j]=0;
+  return s;
+}
+function pos(Z){
+  if(Z===1)return[1,1];if(Z===2)return[1,18];
+  if(Z<=4)return[2,Z-2];if(Z<=10)return[2,Z+8];
+  if(Z<=12)return[3,Z-10];if(Z<=18)return[3,Z];
+  if(Z<=36)return[4,Z-18];if(Z<=54)return[5,Z-36];
+  if(Z<=56)return[6,Z-54];if(Z<=71)return[9,Z-54];
+  if(Z<=86)return[6,Z-68];if(Z<=88)return[7,Z-86];
+  if(Z<=103)return[10,Z-86];return[7,Z-100];
+}
+function $(id){return document.getElementById(id);}
+function de(name){var l=name.toLowerCase();return(/^[aeéèiouyh]/.test(l)?"d'":"de ")+l;}
+
+/* ---------- Mode jour / nuit ---------- */
+var rootEl=document.documentElement,bTheme=$("bTheme"),mq=window.matchMedia?window.matchMedia("(prefers-color-scheme: dark)"):null;
+function isDark(){var t=rootEl.getAttribute("data-theme");return t?t==="dark":!!(mq&&mq.matches);}
+var ICO='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;margin:auto">';
+var SUN=ICO+'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+var MOON=ICO+'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>';
+function themeUI(){var d=isDark(),t=d?"Passer en mode jour":"Passer en mode nuit";bTheme.innerHTML=d?SUN:MOON;bTheme.setAttribute("aria-label",t);bTheme.title=t;}
+try{var saved=localStorage.getItem("atome-theme");if(saved==="dark"||saved==="light")rootEl.setAttribute("data-theme",saved);}catch(_){}
+bTheme.addEventListener("click",function(){
+  var t=isDark()?"light":"dark";rootEl.setAttribute("data-theme",t);
+  try{localStorage.setItem("atome-theme",t);}catch(_){}
+});
+new MutationObserver(themeUI).observe(rootEl,{attributes:true,attributeFilter:["data-theme"]});
+if(mq&&mq.addEventListener)mq.addEventListener("change",themeUI);
+themeUI();
+
+/* ---------- Tableau ---------- */
+var pt=$("pt"),cells={};
+EL.forEach(function(e){
+  var b=document.createElement("button"),p=pos(e.Z);
+  b.type="button";b.className="el c-"+e.cat;b.style.gridRow=p[0]+1;b.style.gridColumn=p[1]+1;
+  b.setAttribute("aria-pressed","false");
+  b.setAttribute("aria-label",e.name+", numéro atomique "+e.Z+", nombre de masse "+e.A);
+  b.title=e.name;
+  b.innerHTML='<span class="A">'+e.A+'</span><span class="X">'+e.sym+'</span><span class="Z">'+e.Z+'</span>';
+  b.addEventListener("click",function(){select(e.Z,true);});
+  pt.appendChild(b);cells[e.Z]=b;
+});
+[[6,"57–71"],[7,"89–103"]].forEach(function(x){var s=document.createElement("span");s.className="ph";s.style.gridRow=x[0]+1;s.style.gridColumn=4;s.textContent=x[1];pt.appendChild(s);});
+var g=document.createElement("span");g.className="gap";g.style.gridRow=9;pt.appendChild(g);
+/* numéros des colonnes (1 à 18) et des lignes (1 à 7) */
+for(var nc=1;nc<=18;nc++){var ns=document.createElement("span");ns.className="axn";ns.style.gridRow=(nc===1||nc===18)?1:(nc===2||nc>=13)?2:4;ns.style.alignSelf="end";ns.style.gridColumn=nc+1;ns.textContent=nc;ns.title="Colonne "+nc;pt.appendChild(ns);}
+for(var nr=1;nr<=7;nr++){var ms=document.createElement("span");ms.className="axn";ms.style.gridRow=nr+1;ms.style.gridColumn=1;ms.textContent=nr;ms.title="Ligne "+nr;pt.appendChild(ms);}
+var cats=$("cats");
+Object.keys(CATS).forEach(function(k){var s=document.createElement("span");s.className="c-"+k;s.innerHTML="<i></i>"+CATS[k];cats.appendChild(s);});
+
+/* ---------- Fiche ---------- */
+var current=null;
+function select(Z,scroll){
+  var e=EL[Z-1],N=e.A-Z,sh=shells(Z);
+  if(current)cells[current.Z].setAttribute("aria-pressed","false");
+  cells[Z].setAttribute("aria-pressed","true");current=e;
+  $("hName").textContent=de(e.name);
+  document.title="Atome "+de(e.name)+" en 3D";
+  $("nA").textContent=e.A;$("nZ").textContent=Z;$("nX").textContent=e.sym;
+  $("vP").textContent=Z;$("vN").textContent=N;$("vA").textContent=e.A;$("vE").textContent=Z;
+  $("hP").textContent="Z = "+Z;
+  $("hN").textContent="A − Z = "+e.A+" − "+Z;
+  $("hA").textContent="protons + neutrons = "+Z+" + "+N;
+  $("hE").textContent="autant que de protons"+(sh.length>1?" · "+sh.map(function(n,i){return n+" sur la "+(i+1)+(i?"e":"re")+(i?"":" couche");}).join(" + "):"");
+  $("neutral").innerHTML="<b>"+Z+"</b> charge"+(Z>1?"s":"")+" (+) et <b>"+Z+"</b> charge"+(Z>1?"s":"")+" (−) : elles se compensent. L'atome est <b>électriquement neutre</b>.";
+  $("t0s").textContent=e.A+" nucléon"+(e.A>1?"s":"")+" : "+Z+" proton"+(Z>1?"s":"")+" + "+N+" neutron"+(N>1?"s":"");
+  $("t2s").textContent="couche "+SHELL_NAMES[sh.length-1]+" : "+sh[sh.length-1]+" électron"+(sh[sh.length-1]>1?"s":"");
+  $("lgA").textContent=e.A;$("lgZ").textContent=Z;$("lgX").textContent=e.sym;$("lgN").textContent=e.name;
+  $("lgCell").className="lg-cell c-"+e.cat;
+  tagNoyau();
+  if(atom3d)atom3d.build(Z,e.A,sh);
+  if(scroll)$("stage").scrollIntoView({behavior:reduce?"auto":"smooth",block:"center"});
+}
+
+/* ---------- 3D ---------- */
+var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var atom3d=null,stage=$("stage");
+function init3d(){
+  var T=window.THREE,cv=$("cv");
+  var renderer=new T.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  var scene=new T.Scene(),cam=new T.PerspectiveCamera(40,1,.1,400);
+  scene.add(new T.HemisphereLight(0xffffff,0x5a6a90,.95));
+  var dl=new T.DirectionalLight(0xffffff,.9);dl.position.set(4,6,8);scene.add(dl);
+  var root=new T.Group();scene.add(root);
+  var nucleus=new T.Group(),cloud=new T.Group();root.add(nucleus);root.add(cloud);
+  root.rotation.set(-0.95,0.35,0);
+
+  function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+  function paint(c,base,sign,ink){
+    var x=c.getContext("2d");
+    x.fillStyle=base;x.fillRect(0,0,256,128);
+    if(sign==="−"){x.fillStyle=ink;var bh=parseFloat(cssv("--e-bar"))||10,bw=bh<10?40:44;x.fillRect(64-bw/2,64-bh/2,bw,bh);x.fillRect(192-bw/2,64-bh/2,bw,bh);}
+    else if(sign){x.fillStyle=ink;x.font="bold 58px Arial, sans-serif";x.textAlign="center";x.textBaseline="middle";
+      for(var i=0;i<4;i++)x.fillText(sign,32+64*i,66);}
+  }
+  function tex(base,sign,ink){
+    var c=document.createElement("canvas");c.width=256;c.height=128;paint(c,base,sign,ink);
+    return new T.CanvasTexture(c);
+  }
+  var S=0.4,geoN=new T.SphereGeometry(S,28,20),geoE=new T.SphereGeometry(0.22,24,16);
+  var pT=tex(cssv("--p-ball")||"#e5343d","+","#ffffff");
+  var matP=new T.MeshStandardMaterial({map:pT,roughness:.35,metalness:.05});
+  var nT=tex(cssv("--n-ball")||"#2380d8",null);
+  var matN=new T.MeshStandardMaterial({map:nT,roughness:.35,metalness:.05});
+  var eT=tex(cssv("--e-ball")||"#f5b301",null);
+  var sC=document.createElement("canvas");sC.width=64;sC.height=64;
+  /* signe « − » : rectangle uni, sans texture, donc sans liseré sur les bords */
+  var signMat=new T.SpriteMaterial({color:0x3a2200}),signH=.05;
+  function paintSign(){var c=(cssv("--e-sign")||"#3a2200").toLowerCase();signMat.color.set(c);signH=.032;
+    if(typeof elec!=="undefined"&&elec)for(var q=0;q<elec.length;q++)if(elec[q].s)elec[q].s.scale.set(.2,signH,1);}
+  paintSign();
+  var matE=new T.MeshStandardMaterial({map:eT,emissive:0xffffff,emissiveMap:eT,emissiveIntensity:.1,roughness:.3});
+  var outP=new T.MeshBasicMaterial({color:0x6e1016,side:T.BackSide}),outN=new T.MeshBasicMaterial({color:0x0f3f73,side:T.BackSide}),outE=new T.MeshBasicMaterial({color:0x6b4a00,side:T.BackSide});
+  function outline(m,geo,mat,k){var o=new T.Mesh(geo,mat);o.scale.set(k,k,k);m.add(o);}
+  var ringMat=new T.MeshBasicMaterial({color:0x8493ad,transparent:true,opacity:.55});
+  function themeRing(){var v=getComputedStyle(document.documentElement).getPropertyValue("--ring").trim();if(v)ringMat.color.set(v);
+    paint(eT.image,cssv("--e-ball")||"#f5b301",null);eT.needsUpdate=true;paintSign();
+    paint(pT.image,cssv("--p-ball")||"#e5343d","+","#ffffff");pT.needsUpdate=true;
+    paint(nT.image,cssv("--n-ball")||"#2380d8",null);nT.needsUpdate=true;}
+  themeRing();
+  if(window.matchMedia)window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",themeRing);
+  new MutationObserver(themeRing).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+  var nuc=[],elec=[],radii=[],nucR=1,outR=3,appear=1;
+  var playing=!reduce,tagsOn=true,boom=0,boomTarget=0,zoom=1,camZ=12;
+
+  function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  function clear(gp){for(var i=gp.children.length-1;i>=0;i--){var m=gp.children[i];gp.remove(m);if(m.userData.own)m.geometry.dispose();}}
+
+  function build(Z,A,sh){
+    clear(nucleus);clear(cloud);nuc=[];elec=[];radii=[];curE=-1;sm=null;smL=null;
+    var r=rng(Z*977+A),i,j,k,P=[];
+    var R0=S*Math.cbrt(A)*1.25;
+    for(i=0;i<A;i++){var u=r()*2-1,th=r()*6.2832,rr=R0*Math.cbrt(r()),q=Math.sqrt(1-u*u);P.push([rr*q*Math.cos(th),rr*q*Math.sin(th),rr*u]);}
+    if(A===1)P[0]=[0,0,0];
+    var D=2*S*0.93;
+    for(k=0;k<90;k++){
+      for(i=0;i<A;i++)for(j=i+1;j<A;j++){
+        var dx=P[j][0]-P[i][0],dy=P[j][1]-P[i][1],dz=P[j][2]-P[i][2],d=Math.sqrt(dx*dx+dy*dy+dz*dz)||1e-4;
+        if(d<D){var f=(D-d)/d*.5;P[i][0]-=dx*f;P[i][1]-=dy*f;P[i][2]-=dz*f;P[j][0]+=dx*f;P[j][1]+=dy*f;P[j][2]+=dz*f;}
+      }
+      for(i=0;i<A;i++){P[i][0]*=.985;P[i][1]*=.985;P[i][2]*=.985;}
+    }
+    var types=[];for(i=0;i<A;i++)types.push(i<Z);
+    for(i=A-1;i>0;i--){j=Math.floor(r()*(i+1));var tmp=types[i];types[i]=types[j];types[j]=tmp;}
+    nucR=S;
+    for(i=0;i<A;i++){
+      var m=new T.Mesh(geoN,types[i]?matP:matN);
+      m.rotation.set(r()*6.28,r()*6.28,r()*6.28);
+      m.userData.base=new T.Vector3(P[i][0],P[i][1],P[i][2]);
+      nucleus.add(m);nuc.push(m);
+      nucR=Math.max(nucR,m.userData.base.length()+S);
+    }
+    for(k=0;k<sh.length;k++){
+      var rad=nucR+1.5+k*1.05;radii.push(rad);
+      var ring=new T.Mesh(new T.TorusGeometry(rad,.016,8,128),ringMat);ring.userData.own=true;cloud.add(ring);
+      for(i=0;i<sh[k];i++){
+        var em=new T.Mesh(geoE,matE);cloud.add(em);
+        var sp=new T.Sprite(signMat);sp.scale.set(.2,signH,1);cloud.add(sp);
+        elec.push({m:em,s:sp,k:k,r:rad,a:i/sh[k]*6.2832+k*.7,w:.75/Math.sqrt(k+1)*(k%2?-1:1)});
+      }
+    }
+    outR=radii[radii.length-1]+.5;appear=0;place(0);
+  }
+  var camL=new T.Vector3(),dir=new T.Vector3();
+  function place(dt){
+    var i,e,s=1+boom*1.6;
+    cloud.updateWorldMatrix(true,false);camL.copy(cam.position);cloud.worldToLocal(camL);
+    for(i=0;i<nuc.length;i++)nuc[i].position.copy(nuc[i].userData.base).multiplyScalar(s);
+    for(i=0;i<elec.length;i++){e=elec[i];e.a+=e.w*dt;e.m.position.set(Math.cos(e.a)*e.r,Math.sin(e.a)*e.r,0);
+      dir.copy(camL).sub(e.m.position).normalize();e.s.position.copy(e.m.position).addScaledVector(dir,.24);}
+  }
+
+  /* étiquettes */
+  var tags=[$("t0"),$("t1"),$("t2")],lines=[$("l0"),$("l1"),$("l2")],dots=[$("d0"),$("d1"),$("d2")];
+  var DIR=[[-1,-1],[1,-1],[1,1]],v=new T.Vector3(),v2=new T.Vector3(),rpx=0,W=1,H=1;
+  function anchor(i){
+    var rw=0;
+    if(i===0){v.set(0,0,0);}
+    else if(i===1){if(!elec.length)return false;v.copy(elec[curE>=0?curE:elec.length-1].m.position);rw=.22;}
+    else{var rr=radii[radii.length-1];v.set(Math.cos(-.75)*rr,Math.sin(-.75)*rr,0);}
+    if(i===0)nucleus.localToWorld(v);else cloud.localToWorld(v);
+    v2.copy(v);v2.x+=rw*root.scale.x;v2.project(cam);
+    v.project(cam);
+    rpx=Math.abs(v2.x-v.x)*W/2;
+    return true;
+  }
+  var sm=null,smL=null,curE=-1;
+  /* électron de la dernière couche le plus proche de l'étiquette fixe */
+  function pickE(tx,ty){
+    var best=-1,bd=1e12,cd=1e12,last=radii.length-1;
+    for(var j=0;j<elec.length;j++){
+      if(elec[j].k!==last)continue;
+      v2.copy(elec[j].m.position);cloud.localToWorld(v2);v2.project(cam);
+      var dx=(v2.x*.5+.5)*W-tx,dy=(-v2.y*.5+.5)*H-ty,d=dx*dx+dy*dy;
+      if(d<bd){bd=d;best=j;}
+      if(j===curE)cd=d;
+    }
+    if(curE<0||cd>=1e12||bd<cd*.7)curE=best;
+  }
+  function labels(){
+    var L=Math.max(34,Math.min(96,Math.min(W,H)*.15));
+    v.set(0,0,0);nucleus.localToWorld(v);v.project(cam);
+    var nx=(v.x*.5+.5)*W,ny=(-v.y*.5+.5)*H;
+    for(var i=0;i<3;i++){
+      var hid=(i===0)?focusOn==="e":(focusOn==="p"||focusOn==="n"||focusOn==="a");
+      var show=tagsOn&&!hid&&(i===0||boomTarget===0)&&anchor(i);
+      tags[i].hidden=!show;lines[i].style.display=dots[i].style.display=show?"":"none";
+      if(!show){if(i===1){sm=null;smL=null;}continue;}
+      var ax=(v.x*.5+.5)*W,ay=(-v.y*.5+.5)*H,bw=tags[i].offsetWidth,bh=tags[i].offsetHeight,left,top;
+      var ex=ax+DIR[i][0]*L,ey=ay+DIR[i][1]*L;
+      left=DIR[i][0]<0?ex-bw:ex;top=DIR[i][1]<0?ey-bh:ey;
+      left=Math.max(6,Math.min(W-bw-6,left));top=Math.max(6,Math.min(H-bh-6,top));
+      tags[i].style.transform="translate("+left.toFixed(1)+"px,"+top.toFixed(1)+"px)";
+      var cx=Math.max(left,Math.min(left+bw,ax)),cy=Math.max(top,Math.min(top+bh,ay));
+      /* le trait part du bord de l'objet, avec un point sur ce bord */
+      if(rpx>0){var dd=Math.hypot(cx-ax,cy-ay)||1,k=Math.min(1,(rpx+2)/dd);ax+=(cx-ax)*k;ay+=(cy-ay)*k;}
+      lines[i].setAttribute("x1",ax);lines[i].setAttribute("y1",ay);lines[i].setAttribute("x2",cx);lines[i].setAttribute("y2",cy);
+      dots[i].setAttribute("cx",ax);dots[i].setAttribute("cy",ay);
+    }
+  }
+
+  function resize(){
+    W=stage.clientWidth;H=stage.clientHeight;if(!W||!H)return;
+    renderer.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix();
+  }
+  if(window.ResizeObserver)new ResizeObserver(resize).observe(stage);else window.addEventListener("resize",resize);
+  resize();
+
+  var last=performance.now();
+  function frame(now){
+    requestAnimationFrame(frame);
+    var dt=Math.min(.05,(now-last)/1000);last=now;
+    boom+=(boomTarget-boom)*Math.min(1,dt*6);
+    appear+=(1-appear)*Math.min(1,dt*(reduce?60:5));
+    var sc=.55+.45*appear;root.scale.set(sc,sc,sc);
+    cloud.visible=boom<.5;
+    var run=playing?dt:0;
+    nucleus.rotation.y+=run*.25;nucleus.rotation.x+=run*.11;
+    place(run);
+    var fitR=outR+(nucR*2.6+.4-outR)*boom;
+    var half=cam.fov*Math.PI/360,hh=Math.atan(Math.tan(half)*Math.min(1,cam.aspect));
+    var target=fitR*1.12/Math.sin(hh)/zoom;
+    camZ+=(target-camZ)*Math.min(1,dt*5);cam.position.set(0,0,camZ);
+    renderer.render(scene,cam);
+    labels();
+  }
+  requestAnimationFrame(frame);
+
+  /* gestes */
+  var pts={},n=0,pinch=0;
+  function dist(){var k=Object.keys(pts);return Math.hypot(pts[k[0]].x-pts[k[1]].x,pts[k[0]].y-pts[k[1]].y);}
+  cv.addEventListener("pointerdown",function(e){try{cv.setPointerCapture(e.pointerId);}catch(_){}
+    pts[e.pointerId]={x:e.clientX,y:e.clientY};n=Object.keys(pts).length;if(n===2)pinch=dist();$("hint").hidden=true;});
+  cv.addEventListener("pointermove",function(e){
+    var p=pts[e.pointerId];if(!p)return;
+    var dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+    if(n===1){root.rotation.y+=dx*.008;root.rotation.x+=dy*.008;}
+    else if(n===2){var d=dist();if(pinch>0)setZoom(zoom*d/pinch);pinch=d;}
+  });
+  function up(e){delete pts[e.pointerId];n=Object.keys(pts).length;}
+  cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
+  function setZoom(z){zoom=Math.max(.5,Math.min(3,z));}
+
+  var bPlay=$("bPlay"),bTags=$("bTags"),bBoom=$("bBoom");
+  function playUI(){bPlay.textContent=playing?"Pause":"Lecture";bPlay.setAttribute("aria-pressed",playing?"false":"true");}
+  playUI();
+  bPlay.addEventListener("click",function(){playing=!playing;playUI();});
+  bTags.addEventListener("click",function(){tagsOn=!tagsOn;bTags.setAttribute("aria-pressed",tagsOn?"true":"false");});
+  function setBoom(v){boomTarget=v;bBoom.setAttribute("aria-pressed",v?"true":"false");bBoom.textContent=v?"Regrouper le noyau":"Écarter les nucléons";}
+  bBoom.addEventListener("click",function(){
+    var v=boomTarget?0:1;
+    /* écarter le noyau alors que seuls les électrons sont mis en avant : on réaffiche tout */
+    if(v&&focusOn==="e"){focusOn=null;setFocus(null);tagNoyau();Array.prototype.forEach.call(document.querySelectorAll(".calc li"),function(l){l.setAttribute("aria-pressed","false");});}
+    setBoom(v);
+  });
+  $("bIn").addEventListener("click",function(){setZoom(zoom*1.25);});
+  $("bOut").addEventListener("click",function(){setZoom(zoom/1.25);});
+  /* remise à zéro de la vue : angle, zoom, noyau regroupé, tout réaffiché */
+  $("bReset").addEventListener("click",function(){
+    root.rotation.set(-0.95,0.35,0);zoom=1;
+    if(boomTarget)setBoom(0);
+    focusOn=null;setFocus(null);tagNoyau();
+    Array.prototype.forEach.call(document.querySelectorAll(".calc li"),function(l){l.setAttribute("aria-pressed","false");});
+    tagsOn=true;bTags.setAttribute("aria-pressed","true");
+    playing=!reduce;playUI();
+  });
+
+  /* mise en avant d'un type de particule : les autres s'estompent */
+  function fade(m,f){m.transparent=f;m.opacity=f?.12:1;m.depthWrite=!f;m.needsUpdate=true;}
+  function setFocus(f){
+    /* les électrons sont cachés quand le noyau est écarté : on le regroupe pour les montrer */
+    if(f==="e"&&boomTarget)setBoom(0);
+    fade(matP,f==="n"||f==="e");fade(matN,f==="p"||f==="e");
+    var fe=f==="p"||f==="n"||f==="a";fade(matE,fe);
+    signMat.transparent=true;signMat.opacity=fe?.12:1;ringMat.opacity=fe?.2:.55;
+  }
+  return{build:build,focus:setFocus};
+}
+try{if(window.THREE)atom3d=init3d();}catch(err){atom3d=null;}
+if(!atom3d){
+  ["t0","t1","t2","hint","leaders"].forEach(function(id){$(id).style.display="none";});
+  var f=document.createElement("p");f.className="fallback";
+  f.textContent="La vue 3D n'a pas pu se charger. Vérifie la connexion internet puis recharge la page. La fiche et le tableau périodique fonctionnent quand même.";
+  stage.appendChild(f);
+}
+/* lignes de la fiche : toucher « Protons », « Neutrons », « Nucléons » ou « Électrons » */
+/* l'étiquette du noyau suit la ligne choisie : Protons, Neutrons, ou le noyau entier */
+function tagNoyau(){
+  var e=current;if(!e)return;
+  var Z=e.Z,N=e.A-Z,b=$("t0").querySelector("b"),s=$("t0s");
+  /* étiquette des électrons : leur nombre quand la ligne « Électrons » est choisie */
+  $("t1").innerHTML=focusOn==="e"?'<b class="ce">'+(Z>1?"Électrons":"Électron")+'</b>'+Z+' électron'+(Z>1?'s':'')+', charge négative (−)':'<b class="ce">Électron</b>charge négative (−)';
+  if(focusOn==="p"){b.textContent=Z>1?"Protons":"Proton";b.className="cp";s.textContent=Z+" proton"+(Z>1?"s":"")+", charge positive (+)";}
+  else if(focusOn==="n"){b.textContent=N>1?"Neutrons":"Neutron";b.className="cn";s.textContent=N?N+" neutron"+(N>1?"s":"")+", aucune charge":"aucun neutron dans cet atome";}
+  else{b.textContent="Noyau";b.className="";s.textContent=e.A+" nucléon"+(e.A>1?"s":"")+" : "+Z+" proton"+(Z>1?"s":"")+" + "+N+" neutron"+(N>1?"s":"");}
+}
+var FOC=[["vP","p"],["vN","n"],["vA","a"],["vE","e"]],focusOn=null;
+FOC.forEach(function(f){
+  var li=$(f[0]).parentNode;li.setAttribute("role","button");li.tabIndex=0;li.setAttribute("aria-pressed","false");
+  function go(){
+    focusOn=focusOn===f[1]?null:f[1];
+    FOC.forEach(function(g){$(g[0]).parentNode.setAttribute("aria-pressed",focusOn===g[1]?"true":"false");});
+    if(atom3d&&atom3d.focus)atom3d.focus(focusOn);
+    tagNoyau();
+  }
+  li.addEventListener("click",go);
+  li.addEventListener("keydown",function(ev){if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();go();}});
+});
+select(6,false);
+})();
+</script>
+</body>
+</html>
