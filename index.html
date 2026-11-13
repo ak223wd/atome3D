@@ -188,8 +188,8 @@ ul{list-style:none;margin:0;padding:0}
 .el .X{grid-column:2;grid-row:1/3;font-family:var(--display);font-weight:600;font-size:clamp(13px,1.9cqw,24px);line-height:1;text-align:left}
 .ph{display:grid;place-items:center;font-size:clamp(8px,.9cqw,11px);color:var(--muted);border:1px dashed var(--line);border-radius:8px;text-align:center;line-height:1.1}
 .gap{grid-column:1/-1;height:8px}
-.c-a{--cat:#ef6c35}.c-e{--cat:#d99a00}.c-t{--cat:#3b82c4}.c-p{--cat:#64748b}.c-m{--cat:#0fa3a3}
-.c-n{--cat:#22a06b}.c-h{--cat:#84a315}.c-g{--cat:#8b5cf6}.c-l{--cat:#b0603a}.c-c{--cat:#9a4d6b}
+.c-a{--cat:#e5484d}.c-e{--cat:#f97316}.c-t{--cat:#3b82f6}.c-p{--cat:#64748b}.c-m{--cat:#06b6d4}
+.c-n{--cat:#22c55e}.c-h{--cat:#eab308}.c-g{--cat:#8b5cf6}.c-l{--cat:#ec4899}.c-c{--cat:#7a8f1a}.c-x{--cat:#9ca3af}
 .cats{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:.85rem;color:var(--muted)}
 .cats span{display:inline-flex;align-items:center;gap:6px}
 .cats i{width:14px;height:14px;border-radius:4px;background:color-mix(in srgb,var(--cat) 45%,var(--surface));border:1px solid var(--cat)}
@@ -200,6 +200,207 @@ ul{list-style:none;margin:0;padding:0}
 .notes li{display:flex;flex-direction:column;gap:4px;align-items:center}
 .notes b{font-family:var(--display);font-weight:600;font-size:.98rem}
 .notes span{color:var(--muted);font-size:.9rem;line-height:1.45;max-width:38ch;text-wrap:pretty}
+
+/* ---------- Légende cliquable ---------- */
+.legend{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:600px){.legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.lgb{display:flex;gap:10px;align-items:center;width:100%;height:100%;text-align:left;padding:8px 10px;min-height:56px;
+  border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lgb:hover{border-color:var(--accent)}
+.lgb[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent)}
+.lgt{display:flex;flex-direction:column;min-width:0}
+.lgt b{font-family:var(--display);font-weight:600;line-height:1.2}
+.lgt small{color:var(--muted);font-size:.82rem;line-height:1.3}
+.cnt{font-variant-numeric:tabular-nums;white-space:nowrap}
+.cm{color:var(--mass);font-weight:700}
+/* icône du noyau : une boule rouge et une boule bleue côte à côte, à la même hauteur */
+.ball.nuc{background:none;position:relative}
+.ball.nuc::before,.ball.nuc::after{content:"";position:absolute;top:50%;width:64%;height:64%;border-radius:50%;transform:translateY(-50%);
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.55),rgba(255,255,255,0) 45%),var(--c)}
+.ball.nuc::before{left:0;--c:var(--p-ball);content:"+";display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:700;font-size:.78rem;line-height:1}
+.ball.nuc::after{right:0;--c:var(--n-ball)}
+@media (max-width:420px){.lgb{padding:6px 8px;gap:8px}.lgb .ball{width:26px;height:26px;font-size:1rem}.lgb .ball.e{width:20px;height:20px;margin:3px}.lgt small{font-size:.76rem}}
+/* lignes de la fiche : aspect de bouton */
+.calc li,.calc li:last-child{cursor:default;border:0;border-bottom:1px solid var(--line);border-radius:0;margin:0;padding:8px 0;background:none;box-shadow:none}
+.calc li:last-child{border-bottom:0}
+.calc li:hover{background:none}
+#vA{color:var(--mass)}
+/* ---------- Petits écrans ---------- */
+header{flex-wrap:nowrap}
+header>div{flex:1 1 0}
+.stage{max-height:min(620px,72vh)}
+@media (max-width:600px),(max-height:540px){
+  .tag{font-size:.72rem;padding:4px 8px;max-width:150px;border-radius:9px}
+  .tag b{font-size:.84rem}
+}
+/* tableau lisible sur téléphone : cases plus grandes, on fait défiler */
+@media (max-width:715px){
+  .pt{min-width:880px}
+  .el .A,.el .Z{font-size:10px}
+  .el .X{font-size:17px}
+  .axn{font-size:10px}
+}
+/* téléphone en paysage : l'atome reste fixe à gauche, la légende complète et les boutons défilent à droite */
+@media (orientation:landscape) and (max-height:540px){
+  .wrap{padding-top:10px;gap:12px}
+  .top>.col:first-child{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:10px 12px;align-items:start}
+  .top>.col:first-child>.stage{grid-column:1;grid-row:1/3;aspect-ratio:auto;height:calc(100vh - 20px);max-height:460px;position:sticky;top:10px}
+  .top>.col:first-child>.card{grid-column:2;grid-row:1;padding:12px}
+  .top>.col:first-child>.tools{grid-column:2;grid-row:2}
+  .top>.col:first-child>.card h2{margin-bottom:6px !important}
+  .lgb{min-height:46px;padding:6px 8px}
+  .noyau-note{margin-top:10px;padding-top:10px;font-size:.88rem}
+  h1{font-size:1.5rem}
+  .lead{display:none}
+}
+/* grille « bento » : sur écran moyen, la représentation symbolique et la fiche de comptage sont côte à côte */
+@media (min-width:640px) and (max-width:900px){
+  .top>.col:last-child{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
+  .nota{justify-content:center}
+  .nota-core .X{font-size:4rem}
+  .nota-core .A,.nota-core .Z{font-size:1.7rem}
+}
+#bPlay{min-width:5.8rem;text-align:center}
+@media (min-width:901px){
+  .top{align-items:stretch}
+  .top>.col:last-child>.card:last-child{flex:1;display:flex;flex-direction:column}
+  .top>.col:last-child>.card:last-child .calc{flex:1;justify-content:space-evenly}
+}
+@media (min-width:640px) and (max-width:900px){
+  .top>.col:last-child>.card:last-child{display:flex;flex-direction:column}
+  .top>.col:last-child>.card:last-child .calc{flex:1;justify-content:space-evenly}
+}
+/* légende du tableau sur téléphone : les traits restent, comme sur grand écran */
+.lg-def{display:none;color:var(--muted);font-size:.85rem;margin:-8px 0 14px;text-align:center}
+.lg-def .A{color:var(--mass)}.lg-def .Z{color:var(--atomic)}
+@media (max-width:640px){
+  .lg{grid-template-columns:minmax(0,1fr) 124px minmax(0,1fr);justify-items:stretch;gap:0}
+  .lg-cell{order:0;width:124px;height:124px;padding:5px 6px 6px}
+  .lg-cell .X{font-size:3rem}
+  .lg-cell .A,.lg-cell .Z{font-size:1.15rem}
+  .lg-cell .N{font-size:.8rem}
+  .lg-side{height:124px;width:auto;display:block}
+  .lg-side li{position:absolute;transform:none;gap:5px}
+  .lg-x,.lg-n{transform:translateY(-50%) !important}
+  .lg-side i{display:block;min-width:8px}
+  .lg-left{text-align:right}
+  .lg-side span{font-size:.74rem;line-height:1.15}
+  .lg-side small{display:none}
+  .lg-def{display:block}
+}
+/* repères A et Z centrés sur leur trait, comme ceux de droite */
+.lg-a{top:34%;bottom:auto;align-items:center;transform:translateY(-50%) !important}
+.lg-z{top:58%;align-items:center;transform:translateY(-50%) !important}
+/* symbole plus grand dans la grande case */
+.lg-cell .X{font-size:4rem}
+.lg-cell .A,.lg-cell .Z{font-size:1.4rem}
+/* quatre traits de même longueur, le texte collé à son trait */
+.lg-side i{flex:0 0 40px;min-width:0}
+.lg-left li{justify-content:flex-end}
+.lg-right li{justify-content:flex-start}
+@media (max-width:640px){
+  .lg-cell .X{font-size:3.2rem}
+  .lg-cell .A,.lg-cell .Z{font-size:1.15rem}
+  .lg-side i{flex:0 0 12px}
+}
+.lg-side b,.lg-side small{white-space:nowrap}
+@media (max-width:640px){.lg-side b{white-space:normal}}
+/* ---------- Familles du tableau : teinte + bandeau de couleur vive ---------- */
+:root{--tint:22%}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--tint:26%}}
+:root[data-theme="dark"]{--tint:26%}
+.el{background:color-mix(in srgb,var(--cat) var(--tint),var(--surface));border-color:color-mix(in srgb,var(--cat) 70%,var(--surface));box-shadow:inset 0 4px 0 var(--cat);transition:opacity .2s}
+.el[aria-pressed="true"]{box-shadow:inset 0 4px 0 var(--cat),0 0 0 2px var(--ink)}
+@media (max-width:900px){.el{box-shadow:inset 0 3px 0 var(--cat)}.el[aria-pressed="true"]{box-shadow:inset 0 3px 0 var(--cat),0 0 0 2px var(--ink)}}
+.el.c-x{border-style:dashed}
+.lg-cell{background:color-mix(in srgb,var(--cat) var(--tint),var(--surface));box-shadow:inset 0 6px 0 var(--cat)}
+/* famille de l'élément choisi, sous la grande case */
+.lg-fam{text-align:center;margin:-8px 0 14px;font-size:.95rem}
+.lg-fam b{font-family:var(--display);font-weight:600}
+.lg-fam i{display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--cat);margin-right:6px;vertical-align:-1px}
+.lg-def{margin-top:0}
+/* légende des familles : boutons qui isolent une famille dans le tableau */
+.cats{gap:8px}
+.catb{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:.88rem;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 8px;min-height:36px;cursor:pointer}
+.catb i{width:14px;height:14px;border-radius:4px;background:var(--cat);border:0}
+.catb:hover{border-color:var(--cat)}
+.catb[aria-pressed="true"]{border-color:var(--cat);background:color-mix(in srgb,var(--cat) 24%,var(--surface));box-shadow:inset 0 0 0 1px var(--cat)}
+.pt.filter .el{opacity:.22}
+.pt.filter .el.on{opacity:1}
+.cats-tip{color:var(--muted);font-size:.88rem;margin:12px 0 6px}
+/* cases « 57–71 » et « 89–103 » aux couleurs de leur famille, reliées à leurs rangées */
+.ph{font:inherit;font-weight:700;font-size:clamp(8px,.9cqw,11px);color:var(--ink);cursor:pointer;padding:0;
+  background:color-mix(in srgb,var(--cat) var(--tint),var(--surface));border:1px solid color-mix(in srgb,var(--cat) 70%,var(--surface));border-radius:8px}
+.con{display:flex;flex-direction:column;pointer-events:none;z-index:2;min-width:0}
+.con .ln{flex:1;position:relative;border-left:3px solid var(--cat);border-bottom:3px solid var(--cat);border-bottom-left-radius:7px;margin-right:7px}
+.con.c-l .ln{margin-left:62%;margin-right:7px}
+.con .dash{display:block;width:100%;aspect-ratio:1/1;position:relative}
+/* pointillé interrompu à la hauteur du nombre, pour le laisser lisible */
+.con .dash::before,.con .dash::after{content:"";position:absolute;left:62%;height:36%;border-left:3px dotted var(--cat)}
+.con .dash::before{top:0}
+.con .dash::after{bottom:0}
+.con.c-c .ln{margin-left:30%}
+.con .ln::after{content:"";position:absolute;right:-10px;bottom:-7.5px;border:6px solid transparent;border-left-color:var(--cat)}
+.con .sp{display:block;width:100%;aspect-ratio:2/1}
+/* texte calé à gauche : la flèche des lanthanides passe à droite sans le couvrir */
+.ph{justify-items:center;padding:0;letter-spacing:-.03em;font-size:clamp(9px,.95cqw,12px)}
+@media (max-width:715px){.ph{font-size:9px}}
+.ph{box-shadow:inset 0 4px 0 var(--cat)}
+@media (max-width:900px){.ph{box-shadow:inset 0 3px 0 var(--cat)}}
+.ph,.con{transition:opacity .2s}
+.pt.filter .ph,.pt.filter .con{opacity:.22}
+.pt.filter .ph.on,.pt.filter .con.on{opacity:1}
+/* élément choisi : la case se soulève et son propre contour s'épaissit, dans la couleur de sa famille */
+.pt-scroll{padding:8px}
+.el{transition:opacity .2s,transform .15s}
+.el[aria-pressed="true"]{position:relative;z-index:3;transform:scale(1.14);border:3px solid var(--cat);
+  box-shadow:0 8px 18px rgba(0,0,0,.3)}
+@media (max-width:900px){.el[aria-pressed="true"]{border-width:2px;box-shadow:0 6px 14px rgba(0,0,0,.3)}}
+@media (prefers-reduced-motion:reduce){.el{transition:none}}
+/* ---------- Explication familles / catégories ---------- */
+.fam-note{font-size:.92rem;line-height:1.5;color:var(--muted);margin:16px 0 4px;max-width:92ch}
+.fam-note b{color:var(--ink);font-family:var(--display);font-weight:600}
+/* ---------- Boutons de catégories : grille régulière sur tous les écrans ---------- */
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:8px;margin-top:8px}
+.catb{width:100%;justify-content:flex-start;text-align:left;line-height:1.15;min-height:40px;border-radius:12px}
+.catb i{flex:none}
+/* ---------- Grande case de la légende du tableau : plus grande, pour aérer les repères ---------- */
+.lg{grid-template-columns:minmax(0,270px) 180px minmax(0,270px)}
+.lg-side{height:180px}
+.lg-cell{width:180px;height:180px;padding:8px 10px 10px}
+.lg-cell .X{font-size:4.8rem}
+.lg-cell .A,.lg-cell .Z{font-size:1.7rem}
+.lg-cell .N{font-size:1rem}
+@media (max-width:640px){
+  .lg{grid-template-columns:minmax(0,1fr) 136px minmax(0,1fr)}
+  .lg-side{height:136px}
+  .lg-cell{width:136px;height:136px;padding:5px 6px 6px}
+  .lg-cell .X{font-size:3.5rem}
+  .lg-cell .A,.lg-cell .Z{font-size:1.25rem}
+  .lg-cell .N{font-size:.85rem}
+}
+/* ---------- Bento : la représentation symbolique remplit sa carte ---------- */
+@media (min-width:640px) and (max-width:900px){
+  .nota{gap:12px;justify-content:center}
+  .nota-title{font-size:1.08rem;padding:8px 18px}
+  .nota p.la{font-size:1.04rem}
+  .nota-core .X{font-size:6.4rem}
+  .nota-core .A,.nota-core .Z{font-size:2.7rem}
+  .arrow{width:26px;height:38px}
+  .arrow.right{width:46px;height:26px}
+  .la.sym{font-size:1.04rem;max-width:10ch}
+}
+/* description de la famille mise en avant */
+.fam-info{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;padding:10px 14px;border-radius:12px;
+  border:1px solid color-mix(in srgb,var(--cat) 60%,var(--surface));background:color-mix(in srgb,var(--cat) 12%,var(--surface))}
+.fam-info[hidden]{display:none}
+.fam-info i{flex:none;width:14px;height:14px;border-radius:4px;background:var(--cat);margin-top:4px}
+.fam-info p{font-size:.95rem;line-height:1.45;flex:1;min-width:0}
+.fam-info b{font-family:var(--display);font-weight:600}
+.notes-intro{color:var(--muted);font-size:.95rem;line-height:1.5;max-width:70ch;margin:0 auto;text-wrap:balance}
+.notes-intro b{color:var(--ink);font-family:var(--display);font-weight:600}
+.copy{color:var(--muted);font-size:.85rem;margin-top:6px;padding-top:14px;border-top:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -238,10 +439,12 @@ ul{list-style:none;margin:0;padding:0}
 
       <section class="card" aria-labelledby="legT">
         <h2 id="legT" style="margin-bottom:12px">Légende</h2>
+        <p class="tip">Touche une particule pour la repérer dans l'atome. Touche-la encore pour tout réafficher.</p>
         <ul class="legend">
-          <li><span class="ball p">+</span><div><b class="cp">Proton</b><small>Charge positive (+).<br>Dans le noyau.</small></div></li>
-          <li><span class="ball n"></span><div><b class="cn">Neutron</b><small>Aucune charge (neutre).<br>Dans le noyau.</small></div></li>
-          <li><span class="ball e">−</span><div><b class="ce">Électron</b><small>Charge négative (−).<br>Tourne autour du noyau.</small></div></li>
+          <li><button class="lgb" type="button" data-f="p" aria-pressed="false"><span class="ball p">+</span><span class="lgt"><b class="cp">Proton</b><small>Charge positive (+). Dans le noyau.</small></span></button></li>
+          <li><button class="lgb" type="button" data-f="n" aria-pressed="false"><span class="ball n"></span><span class="lgt"><b class="cn">Neutron</b><small>Aucune charge. Dans le noyau.</small></span></button></li>
+          <li><button class="lgb" type="button" data-f="e" aria-pressed="false"><span class="ball e">−</span><span class="lgt"><b class="ce">Électron</b><small>Charge négative (−). Autour du noyau.</small></span></button></li>
+          <li><button class="lgb" type="button" data-f="a" aria-pressed="false"><span class="ball nuc"></span><span class="lgt"><b class="cm">Noyau</b><small>Les nucléons : protons et neutrons.</small></span></button></li>
         </ul>
         <p class="noyau-note"><b>Le noyau</b> est le centre de l'atome. Il contient les <b>nucléons</b> : c'est le nom donné aux <span class="cp">protons</span> et aux <span class="cn">neutrons</span> réunis. Les <span class="ce">électrons</span> se déplacent autour du noyau.</p>
       </section>
@@ -267,7 +470,6 @@ ul{list-style:none;margin:0;padding:0}
 
       <section class="card" aria-labelledby="cT" aria-live="polite">
         <h2 id="cT" style="margin-bottom:6px">Je compte les particules</h2>
-        <p class="tip">Touche une ligne pour repérer ces particules dans l'atome. Touche-la encore pour tout réafficher.</p>
         <ul class="calc">
           <li><div><b class="cp">Protons</b><div class="how" id="hP">Z = 6</div></div><span class="num cp" id="vP">6</span></li>
           <li><div><b class="cn">Neutrons</b><div class="how" id="hN">A − Z = 12 − 6</div></div><span class="num cn" id="vN">6</span></li>
@@ -282,11 +484,11 @@ ul{list-style:none;margin:0;padding:0}
   <section class="card" aria-labelledby="ptT">
     <div class="pt-head">
       <h2 id="ptT">Tableau périodique en représentation symbolique</h2>
-      <p class="key">Chaque case est écrite comme la représentation symbolique d'un atome : <span class="A">A</span> en haut et <span class="Z">Z</span> en bas, à gauche du symbole. Touche une case pour afficher l'atome en 3D. La grande case ci-dessous montre comment lire l'élément choisi.</p>
+      <p class="key">Le tableau périodique classe les 118 éléments chimiques connus par numéro atomique Z croissant, sur 7 lignes et 18 colonnes. Les éléments d'une même colonne ont des propriétés chimiques semblables. Touche une case pour afficher l'atome en 3D.</p>
     </div>
     <div class="lg" role="group" aria-label="Légende : comment lire une case du tableau">
       <ul class="lg-side lg-left">
-        <li class="lg-a"><span><b class="A">Nombre de masse A</b><small>nombre de nucléons (protons + neutrons)</small></span><i></i></li>
+        <li class="lg-a"><span><b class="A">Nombre de masse A</b><small>nombre de nucléons</small></span><i></i></li>
         <li class="lg-z"><span><b class="Z">Numéro atomique Z</b><small>nombre de protons</small></span><i></i></li>
       </ul>
       <div class="lg-cell c-n" id="lgCell"><span class="A" id="lgA">12</span><span class="X" id="lgX">C</span><span class="Z" id="lgZ">6</span><span class="N" id="lgN">Carbone</span></div>
@@ -295,18 +497,24 @@ ul{list-style:none;margin:0;padding:0}
         <li class="lg-n"><i></i><span><b>Nom de l'élément</b></span></li>
       </ul>
     </div>
-    <p class="swipe">Fais glisser le tableau vers la droite pour voir la suite →</p>
+    <p class="lg-fam" aria-live="polite"><i id="lgFamI"></i><span id="lgFamT">Famille</span> : <b id="lgFam"></b></p>
+    <p class="lg-def"><b class="A">A</b> : nombre de nucléons (protons + neutrons) · <b class="Z">Z</b> : nombre de protons</p>
+    <div class="fam-info" id="famInfo" aria-live="polite" hidden><i id="famInfoI"></i><p><b id="famInfoT"></b><span id="famInfoD"></span></p></div>
+    <p class="swipe">Fais glisser le tableau vers la gauche pour voir la suite →</p>
     <div class="pt-scroll"><div class="pt" id="pt"></div></div>
+    <p class="cats-tip">Touche une famille pour la repérer dans le tableau et lire sa description.</p>
     <div class="cats" id="cats"></div>
   </section>
 
   <footer class="notes" aria-labelledby="nT">
     <h2 id="nT">Ce dessin est un modèle</h2>
+    <p class="notes-intro">Cette page utilise le <b>modèle de Bohr</b> (1913) : un noyau au centre, et des électrons qui tournent autour sur des couches. Chaque couche ne peut contenir qu'un nombre limité d'électrons : le carbone, par exemple, en a 2 sur la première et 4 sur la deuxième.</p>
     <ul>
       <li><b>Échelle</b><span>Dans la réalité, le noyau est environ 100 000 fois plus petit que l'atome. Il est grossi ici pour rester visible.</span></li>
       <li><b>Électrons</b><span>Ils ne suivent pas vraiment des cercles. Les couches sont une façon simple de les représenter.</span></li>
       <li><b>Nombre de masse A</b><span>Le tableau affiche celui de l'atome le plus courant, ou le plus stable, de chaque élément.</span></li>
     </ul>
+    <p class="copy">ANK:Education · Copyright © 2026</p>
   </footer>
 </div>
 
@@ -314,9 +522,9 @@ ul{list-style:none;margin:0;padding:0}
 <script>
 (function(){
 "use strict";
-var RAW="H,Hydrogène,1,n|He,Hélium,4,g|Li,Lithium,7,a|Be,Béryllium,9,e|B,Bore,11,m|C,Carbone,12,n|N,Azote,14,n|O,Oxygène,16,n|F,Fluor,19,h|Ne,Néon,20,g|Na,Sodium,23,a|Mg,Magnésium,24,e|Al,Aluminium,27,p|Si,Silicium,28,m|P,Phosphore,31,n|S,Soufre,32,n|Cl,Chlore,35,h|Ar,Argon,40,g|K,Potassium,39,a|Ca,Calcium,40,e|Sc,Scandium,45,t|Ti,Titane,48,t|V,Vanadium,51,t|Cr,Chrome,52,t|Mn,Manganèse,55,t|Fe,Fer,56,t|Co,Cobalt,59,t|Ni,Nickel,58,t|Cu,Cuivre,63,t|Zn,Zinc,64,t|Ga,Gallium,69,p|Ge,Germanium,74,m|As,Arsenic,75,m|Se,Sélénium,80,n|Br,Brome,79,h|Kr,Krypton,84,g|Rb,Rubidium,85,a|Sr,Strontium,88,e|Y,Yttrium,89,t|Zr,Zirconium,90,t|Nb,Niobium,93,t|Mo,Molybdène,98,t|Tc,Technétium,98,t|Ru,Ruthénium,102,t|Rh,Rhodium,103,t|Pd,Palladium,106,t|Ag,Argent,107,t|Cd,Cadmium,114,t|In,Indium,115,p|Sn,Étain,120,p|Sb,Antimoine,121,m|Te,Tellure,130,m|I,Iode,127,h|Xe,Xénon,132,g|Cs,Césium,133,a|Ba,Baryum,138,e|La,Lanthane,139,l|Ce,Cérium,140,l|Pr,Praséodyme,141,l|Nd,Néodyme,142,l|Pm,Prométhium,145,l|Sm,Samarium,152,l|Eu,Europium,153,l|Gd,Gadolinium,158,l|Tb,Terbium,159,l|Dy,Dysprosium,164,l|Ho,Holmium,165,l|Er,Erbium,166,l|Tm,Thulium,169,l|Yb,Ytterbium,174,l|Lu,Lutécium,175,l|Hf,Hafnium,180,t|Ta,Tantale,181,t|W,Tungstène,184,t|Re,Rhénium,187,t|Os,Osmium,192,t|Ir,Iridium,193,t|Pt,Platine,195,t|Au,Or,197,t|Hg,Mercure,202,t|Tl,Thallium,205,p|Pb,Plomb,208,p|Bi,Bismuth,209,p|Po,Polonium,209,p|At,Astate,210,h|Rn,Radon,222,g|Fr,Francium,223,a|Ra,Radium,226,e|Ac,Actinium,227,c|Th,Thorium,232,c|Pa,Protactinium,231,c|U,Uranium,238,c|Np,Neptunium,237,c|Pu,Plutonium,244,c|Am,Américium,243,c|Cm,Curium,247,c|Bk,Berkélium,247,c|Cf,Californium,251,c|Es,Einsteinium,252,c|Fm,Fermium,257,c|Md,Mendélévium,258,c|No,Nobélium,259,c|Lr,Lawrencium,266,c|Rf,Rutherfordium,267,t|Db,Dubnium,268,t|Sg,Seaborgium,269,t|Bh,Bohrium,270,t|Hs,Hassium,269,t|Mt,Meitnérium,278,t|Ds,Darmstadtium,281,t|Rg,Roentgenium,282,t|Cn,Copernicium,285,t|Nh,Nihonium,286,p|Fl,Flérovium,289,p|Mc,Moscovium,290,p|Lv,Livermorium,293,p|Ts,Tennesse,294,h|Og,Oganesson,294,g";
+var RAW="H,Hydrogène,1,n|He,Hélium,4,g|Li,Lithium,7,a|Be,Béryllium,9,e|B,Bore,11,m|C,Carbone,12,n|N,Azote,14,n|O,Oxygène,16,n|F,Fluor,19,h|Ne,Néon,20,g|Na,Sodium,23,a|Mg,Magnésium,24,e|Al,Aluminium,27,p|Si,Silicium,28,m|P,Phosphore,31,n|S,Soufre,32,n|Cl,Chlore,35,h|Ar,Argon,40,g|K,Potassium,39,a|Ca,Calcium,40,e|Sc,Scandium,45,t|Ti,Titane,48,t|V,Vanadium,51,t|Cr,Chrome,52,t|Mn,Manganèse,55,t|Fe,Fer,56,t|Co,Cobalt,59,t|Ni,Nickel,58,t|Cu,Cuivre,63,t|Zn,Zinc,64,p|Ga,Gallium,69,p|Ge,Germanium,74,m|As,Arsenic,75,m|Se,Sélénium,80,n|Br,Brome,79,h|Kr,Krypton,84,g|Rb,Rubidium,85,a|Sr,Strontium,88,e|Y,Yttrium,89,t|Zr,Zirconium,90,t|Nb,Niobium,93,t|Mo,Molybdène,98,t|Tc,Technétium,98,t|Ru,Ruthénium,102,t|Rh,Rhodium,103,t|Pd,Palladium,106,t|Ag,Argent,107,t|Cd,Cadmium,114,p|In,Indium,115,p|Sn,Étain,120,p|Sb,Antimoine,121,m|Te,Tellure,130,m|I,Iode,127,h|Xe,Xénon,132,g|Cs,Césium,133,a|Ba,Baryum,138,e|La,Lanthane,139,l|Ce,Cérium,140,l|Pr,Praséodyme,141,l|Nd,Néodyme,142,l|Pm,Prométhium,145,l|Sm,Samarium,152,l|Eu,Europium,153,l|Gd,Gadolinium,158,l|Tb,Terbium,159,l|Dy,Dysprosium,164,l|Ho,Holmium,165,l|Er,Erbium,166,l|Tm,Thulium,169,l|Yb,Ytterbium,174,l|Lu,Lutécium,175,l|Hf,Hafnium,180,t|Ta,Tantale,181,t|W,Tungstène,184,t|Re,Rhénium,187,t|Os,Osmium,192,t|Ir,Iridium,193,t|Pt,Platine,195,t|Au,Or,197,t|Hg,Mercure,202,p|Tl,Thallium,205,p|Pb,Plomb,208,p|Bi,Bismuth,209,p|Po,Polonium,209,p|At,Astate,210,m|Rn,Radon,222,g|Fr,Francium,223,a|Ra,Radium,226,e|Ac,Actinium,227,c|Th,Thorium,232,c|Pa,Protactinium,231,c|U,Uranium,238,c|Np,Neptunium,237,c|Pu,Plutonium,244,c|Am,Américium,243,c|Cm,Curium,247,c|Bk,Berkélium,247,c|Cf,Californium,251,c|Es,Einsteinium,252,c|Fm,Fermium,257,c|Md,Mendélévium,258,c|No,Nobélium,259,c|Lr,Lawrencium,266,c|Rf,Rutherfordium,267,t|Db,Dubnium,268,t|Sg,Seaborgium,269,t|Bh,Bohrium,270,t|Hs,Hassium,269,t|Mt,Meitnérium,278,x|Ds,Darmstadtium,281,x|Rg,Roentgenium,282,x|Cn,Copernicium,285,t|Nh,Nihonium,286,x|Fl,Flérovium,289,x|Mc,Moscovium,290,x|Lv,Livermorium,293,x|Ts,Tennesse,294,x|Og,Oganesson,294,x";
 var EL=RAW.split("|").map(function(s,i){var p=s.split(",");return{Z:i+1,sym:p[0],name:p[1],A:+p[2],cat:p[3]};});
-var CATS={a:"Métaux alcalins",e:"Alcalino-terreux",t:"Métaux de transition",p:"Autres métaux",m:"Métalloïdes",n:"Non-métaux",h:"Halogènes",g:"Gaz nobles",l:"Lanthanides",c:"Actinides"};
+var CATS={a:"Alcalins",e:"Alcalino-terreux",t:"Métaux de transition",p:"Métaux pauvres",m:"Métalloïdes",n:"Autres non-métaux",h:"Halogènes",g:"Gaz nobles",l:"Lanthanides",c:"Actinides",x:"Non classés"};
 var SHELL_NAMES=["K","L","M","N","O","P","Q"];
 
 /* Répartition des électrons par couche (règle de remplissage + exceptions connues) */
@@ -334,9 +542,9 @@ function pos(Z){
   if(Z<=4)return[2,Z-2];if(Z<=10)return[2,Z+8];
   if(Z<=12)return[3,Z-10];if(Z<=18)return[3,Z];
   if(Z<=36)return[4,Z-18];if(Z<=54)return[5,Z-36];
-  if(Z<=56)return[6,Z-54];if(Z<=71)return[9,Z-54];
+  if(Z<=56)return[6,Z-54];if(Z<=71)return[9,Z-53];
   if(Z<=86)return[6,Z-68];if(Z<=88)return[7,Z-86];
-  if(Z<=103)return[10,Z-86];return[7,Z-100];
+  if(Z<=103)return[10,Z-85];return[7,Z-100];
 }
 function $(id){return document.getElementById(id);}
 function de(name){var l=name.toLowerCase();return(/^[aeéèiouyh]/.test(l)?"d'":"de ")+l;}
@@ -366,16 +574,64 @@ EL.forEach(function(e){
   b.setAttribute("aria-label",e.name+", numéro atomique "+e.Z+", nombre de masse "+e.A);
   b.title=e.name;
   b.innerHTML='<span class="A">'+e.A+'</span><span class="X">'+e.sym+'</span><span class="Z">'+e.Z+'</span>';
-  b.addEventListener("click",function(){select(e.Z,true);});
+  b.addEventListener("click",function(){
+    /* élément d'une autre famille que celle mise en avant : le tableau redevient normal */
+    if(catOn&&e.cat!==catOn)catFilter(catOn);
+    select(e.Z,true);
+  });
   pt.appendChild(b);cells[e.Z]=b;
 });
-[[6,"57–71"],[7,"89–103"]].forEach(function(x){var s=document.createElement("span");s.className="ph";s.style.gridRow=x[0]+1;s.style.gridColumn=4;s.textContent=x[1];pt.appendChild(s);});
+[[6,"57–71","l","Lanthanides"],[7,"89–103","c","Actinides"]].forEach(function(x){
+  var s=document.createElement("button");s.type="button";s.className="ph c-"+x[2];s.style.gridRow=x[0]+1;s.style.gridColumn=4;s.textContent=x[1];
+  s.title=x[3];s.setAttribute("aria-label",x[3]+", éléments "+x[1]);s.addEventListener("click",function(){catFilter(x[2]);});pt.appendChild(s);
+});
+/* flèches coudées : de chaque case vers sa rangée, en bas du tableau */
+[["l","8 / 11"],["c","9 / 12"]].forEach(function(x){
+  var c=document.createElement("span");c.className="con c-"+x[0];c.setAttribute("aria-hidden","true");c.style.gridRow=x[1];c.style.gridColumn=4;
+  c.innerHTML=(x[0]==="l"?'<span class="dash"></span>':'')+'<span class="ln"></span><span class="sp"></span>';pt.appendChild(c);
+});
 var g=document.createElement("span");g.className="gap";g.style.gridRow=9;pt.appendChild(g);
 /* numéros des colonnes (1 à 18) et des lignes (1 à 7) */
 for(var nc=1;nc<=18;nc++){var ns=document.createElement("span");ns.className="axn";ns.style.gridRow=(nc===1||nc===18)?1:(nc===2||nc>=13)?2:4;ns.style.alignSelf="end";ns.style.gridColumn=nc+1;ns.textContent=nc;ns.title="Colonne "+nc;pt.appendChild(ns);}
 for(var nr=1;nr<=7;nr++){var ms=document.createElement("span");ms.className="axn";ms.style.gridRow=nr+1;ms.style.gridColumn=1;ms.textContent=nr;ms.title="Ligne "+nr;pt.appendChild(ms);}
 var cats=$("cats");
-Object.keys(CATS).forEach(function(k){var s=document.createElement("span");s.className="c-"+k;s.innerHTML="<i></i>"+CATS[k];cats.appendChild(s);});
+/* courte description de chaque famille, affichée quand on la touche */
+var FAMD={
+  a:"Métaux mous et très réactifs de la colonne 1, sans l'hydrogène. Ils réagissent vivement avec l'eau. Exemples : sodium, potassium.",
+  e:"Métaux de la colonne 2. Exemples : magnésium, calcium.",
+  t:"Métaux du centre du tableau, denses et difficiles à fondre. Exemples : fer, cuivre, or.",
+  p:"Métaux aux propriétés intermédiaires entre les métaux de transition et les métalloïdes. Exemples : aluminium, étain, plomb.",
+  m:"Éléments intermédiaires entre les métaux et les non-métaux. Exemples : silicium, bore.",
+  n:"Éléments non métalliques, mauvais conducteurs de la chaleur et de l'électricité. Exemples : carbone, azote, oxygène.",
+  h:"Non-métaux très réactifs de la colonne 17. Ils forment des sels avec les métaux. Exemples : fluor, chlore, iode.",
+  g:"Gaz de la colonne 18, qui ne réagissent presque pas. Exemples : hélium, néon, argon.",
+  l:"Quinze métaux, du lanthane au lutécium (éléments 57 à 71), aux propriétés très proches. Exemple : néodyme.",
+  c:"Quinze métaux, de l'actinium au lawrencium (éléments 89 à 103), tous radioactifs. Exemples : uranium, plutonium.",
+  x:"Éléments très lourds, fabriqués en laboratoire. Leurs propriétés chimiques ne sont pas encore connues par l'expérience."
+};
+function famInfo(){
+  var box=$("famInfo");box.hidden=!catOn;
+  if(!catOn)return;
+  box.className="fam-info c-"+catOn;$("famInfoT").textContent=CATS[catOn]+" : ";$("famInfoD").textContent=FAMD[catOn];
+}
+var catOn=null;
+function catFilter(k){
+  catOn=catOn===k?null:k;
+  pt.classList.toggle("filter",!!catOn);
+  famInfo();
+  /* on amène le tableau à l'écran quand une famille est mise en avant */
+  if(catOn){
+    var tr=pt.getBoundingClientRect(),tb=$("famInfo").getBoundingClientRect(),tvh=window.innerHeight||document.documentElement.clientHeight;
+    if(tb.top<0||tr.bottom>tvh){var td=tb.top-12;if(Math.abs(td)>4)window.scrollBy({top:td,left:0,behavior:reduce?"auto":"smooth"});}
+  }
+  EL.forEach(function(e){cells[e.Z].classList.toggle("on",e.cat===catOn);});
+  Array.prototype.forEach.call(pt.querySelectorAll(".ph,.con"),function(x){x.classList.toggle("on",!!catOn&&x.classList.contains("c-"+catOn));});
+  Array.prototype.forEach.call(cats.children,function(b){b.setAttribute("aria-pressed",b.getAttribute("data-cat")===catOn?"true":"false");});
+}
+Object.keys(CATS).forEach(function(k){
+  var b=document.createElement("button");b.type="button";b.className="catb c-"+k;b.setAttribute("data-cat",k);b.setAttribute("aria-pressed","false");
+  b.innerHTML="<i></i>"+CATS[k];b.addEventListener("click",function(){catFilter(k);});cats.appendChild(b);
+});
 
 /* ---------- Fiche ---------- */
 var current=null;
@@ -396,6 +652,7 @@ function select(Z,scroll){
   $("t2s").textContent="couche "+SHELL_NAMES[sh.length-1]+" : "+sh[sh.length-1]+" électron"+(sh[sh.length-1]>1?"s":"");
   $("lgA").textContent=e.A;$("lgZ").textContent=Z;$("lgX").textContent=e.sym;$("lgN").textContent=e.name;
   $("lgCell").className="lg-cell c-"+e.cat;
+  $("lgFam").textContent=CATS[e.cat];$("lgFamT").textContent="Famille";$("lgFamI").className="c-"+e.cat;
   tagNoyau();
   if(atom3d)atom3d.build(Z,e.A,sh);
   if(scroll)$("stage").scrollIntoView({behavior:reduce?"auto":"smooth",block:"center"});
@@ -503,7 +760,7 @@ function init3d(){
 
   /* étiquettes */
   var tags=[$("t0"),$("t1"),$("t2")],lines=[$("l0"),$("l1"),$("l2")],dots=[$("d0"),$("d1"),$("d2")];
-  var DIR=[[-1,-1],[1,-1],[1,1]],v=new T.Vector3(),v2=new T.Vector3(),rpx=0,W=1,H=1;
+  var hintEl=$("hint"),DIR=[[-1,-1],[1,-1],[1,1]],v=new T.Vector3(),v2=new T.Vector3(),rpx=0,W=1,H=1;
   function anchor(i){
     var rw=0;
     if(i===0){v.set(0,0,0);}
@@ -540,7 +797,7 @@ function init3d(){
       var ax=(v.x*.5+.5)*W,ay=(-v.y*.5+.5)*H,bw=tags[i].offsetWidth,bh=tags[i].offsetHeight,left,top;
       var ex=ax+DIR[i][0]*L,ey=ay+DIR[i][1]*L;
       left=DIR[i][0]<0?ex-bw:ex;top=DIR[i][1]<0?ey-bh:ey;
-      left=Math.max(6,Math.min(W-bw-6,left));top=Math.max(6,Math.min(H-bh-6,top));
+      left=Math.max(6,Math.min(W-bw-6,left));top=Math.max(6,Math.min(H-bh-(hintEl.hidden?6:28),top));
       tags[i].style.transform="translate("+left.toFixed(1)+"px,"+top.toFixed(1)+"px)";
       var cx=Math.max(left,Math.min(left+bw,ax)),cy=Math.max(top,Math.min(top+bh,ay));
       /* le trait part du bord de l'objet, avec un point sur ce bord */
@@ -601,7 +858,7 @@ function init3d(){
   bBoom.addEventListener("click",function(){
     var v=boomTarget?0:1;
     /* écarter le noyau alors que seuls les électrons sont mis en avant : on réaffiche tout */
-    if(v&&focusOn==="e"){focusOn=null;setFocus(null);tagNoyau();Array.prototype.forEach.call(document.querySelectorAll(".calc li"),function(l){l.setAttribute("aria-pressed","false");});}
+    if(v&&focusOn==="e"){focusOn=null;setFocus(null);tagNoyau();syncFocus();}
     setBoom(v);
   });
   $("bIn").addEventListener("click",function(){setZoom(zoom*1.25);});
@@ -611,7 +868,7 @@ function init3d(){
     root.rotation.set(-0.95,0.35,0);zoom=1;
     if(boomTarget)setBoom(0);
     focusOn=null;setFocus(null);tagNoyau();
-    Array.prototype.forEach.call(document.querySelectorAll(".calc li"),function(l){l.setAttribute("aria-pressed","false");});
+    syncFocus();
     tagsOn=true;bTags.setAttribute("aria-pressed","true");
     playing=!reduce;playUI();
   });
@@ -646,17 +903,23 @@ function tagNoyau(){
   else{b.textContent="Noyau";b.className="";s.textContent=e.A+" nucléon"+(e.A>1?"s":"")+" : "+Z+" proton"+(Z>1?"s":"")+" + "+N+" neutron"+(N>1?"s":"");}
 }
 var FOC=[["vP","p"],["vN","n"],["vA","a"],["vE","e"]],focusOn=null;
-FOC.forEach(function(f){
-  var li=$(f[0]).parentNode;li.setAttribute("role","button");li.tabIndex=0;li.setAttribute("aria-pressed","false");
-  function go(){
-    focusOn=focusOn===f[1]?null:f[1];
-    FOC.forEach(function(g){$(g[0]).parentNode.setAttribute("aria-pressed",focusOn===g[1]?"true":"false");});
-    if(atom3d&&atom3d.focus)atom3d.focus(focusOn);
-    tagNoyau();
+/* l'état « particule mise en avant » est partagé par la légende et par la fiche */
+function syncFocus(){
+  Array.prototype.forEach.call(document.querySelectorAll("[data-f]"),function(el){el.setAttribute("aria-pressed",focusOn===el.getAttribute("data-f")?"true":"false");});
+}
+function goFocus(f,el){
+  focusOn=focusOn===f?null:f;
+  syncFocus();
+  if(atom3d&&atom3d.focus)atom3d.focus(focusOn);
+  tagNoyau();
+  /* on amène toujours l'atome en entier à l'écran : le haut de la scène vient en haut de la fenêtre */
+  var r=stage.getBoundingClientRect(),vh=window.innerHeight||document.documentElement.clientHeight;
+  if(focusOn&&(r.top<0||r.bottom>vh)){
+    var d=r.top-8;
+    if(Math.abs(d)>4)window.scrollBy({top:d,left:0,behavior:reduce?"auto":"smooth"});
   }
-  li.addEventListener("click",go);
-  li.addEventListener("keydown",function(ev){if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();go();}});
-});
+}
+Array.prototype.forEach.call(document.querySelectorAll(".lgb"),function(b){b.addEventListener("click",function(){goFocus(b.getAttribute("data-f"),b);});});
 select(6,false);
 })();
 </script>
